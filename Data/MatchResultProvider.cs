@@ -1,17 +1,12 @@
 ﻿
-
 namespace AdafyBlazorApp.Data
 {
     public class MatchResultProvider
     {
         private readonly HttpClient httpClient;
-        private readonly IHttpContextAccessor httpContext;
-        private readonly IConfiguration configuration;
 
-        public MatchResultProvider(HttpClient client, IConfiguration _configuration, IHttpContextAccessor _context)
+        public MatchResultProvider(HttpClient client)
         {
-            httpContext = _context;
-            configuration = _configuration;
             httpClient = client;
         }
 
