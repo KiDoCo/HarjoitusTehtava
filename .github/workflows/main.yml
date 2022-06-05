@@ -22,8 +22,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     
-    - name: Setup .Net Core 6.0 SDK
-      uses: actions/setup-dotnet@2.1.0
+    - name: Setup .NET Core SDK
+      uses: actions/setup-dotnet@v2.1.0
       with:
         dotnet-version: 6.0
     
@@ -31,7 +31,7 @@ jobs:
       run: dotnet publish AdafyBlazorApp.csproj -c Release -o release --nologo
       
     - name: Commit wwwroot to Github Pages
-      uses: JamesIves/github-pages-deploy-action@4.3.3
+      uses: JamesIves/github-pages-deploy-action@v4.3.3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-pages
