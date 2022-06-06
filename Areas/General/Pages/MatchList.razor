@@ -1,47 +1,82 @@
 ﻿@page "/matchlist"
+@using AdafyBlazorApp.Data
+@using System.Collections.ObjectModel;
 @implements IAsyncDisposable
 @inject IJSRuntime jsRunTime
+@inject MatchResultProvider provider
+
 @using AdafyBlazorApp.Models
 <PageTitle>Test</PageTitle>
 <h3>MatchList</h3>
 
-<table id="match_table" class="table table-striped table-hover">
+<input type="text" @oninput="UpdateMatchListing" />
+
+@if(loaded)
+{
+<table id="match_table" @ondblclick="MatchSelected" class="table table-striped table-hover">
     <thead>
         <tr>
-            <th>Tiimi</th>
             <th>Päivämäärä</th>
+            <th>Kotijoukkue</th>
+            <th>VierasJoukkue</th>
             <th>Tulos</th>
         </tr>
     </thead>
     <tbody>
-        @foreach(var match in matchList)
+        @foreach(var match in matchObservableList)
         {
             <tr>
-                <td>@match.Id</td>
                 <td>@match.MatchDate</td>
+                <td>
+                    <img height="16" width="16" src=@match.HomeTeam.LogoUrl>
+                    @match.HomeTeam.Name
+                    </td>
+                <td>
+                    <img height="16" width="16" src=@match.AwayTeam.LogoUrl>
+                    @match.AwayTeam.Name
+                    </td>
+                <td>@match.HomeGoals - @match.AwayGoals</td>
             </tr>
         }
     </tbody>
 </table>
+}
 
 @code {
-    private Match[] matchList;
+    private const string JSPATH = "./Areas/General/Pages/";
+    private bool loaded = false;
+    ObservableCollection<Match> matchObservableList = new ObservableCollection<Match>();
     private IJSObjectReference? eventModule;
-    private const string JSPath = "./Areas/General/Pages/";
-    protected override Task OnInitializedAsync()
+
+    private async Task UpdateMatchListing(ChangeEventArgs e)
     {
-        matchList = Enumerable.Range(0, 10).Select(x => new Match
-        {
-            MatchDate = DateTime.UtcNow,
-            Id = x
-        }).ToArray();
-        return base.OnInitializedAsync();
+        string? filter = e?.Value?.ToString();
+        matchObservableList = new ObservableCollection<Match>(await GetMatchesFromServer(filter));
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    private Task MatchSelected(MouseEventArgs e)
     {
-        eventModule = await jsRunTime.InvokeAsync<IJSObjectReference>("import", JSPath + "MatchList.razor.js");
-        await eventModule.InvokeVoidAsync("AssignDoubleClickEvent");
+        Console.WriteLine("test");
+        return Task.CompletedTask;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        matchObservableList = new ObservableCollection<Match>(await GetMatchesFromServer(""));
+        loaded = true;
+    }
+
+    private async Task<Match[]> GetMatchesFromServer(string? filter)
+    {
+        var matchList = await provider.GetMatchResultFromServer();
+        if (!string.IsNullOrEmpty(filter))
+            matchList = matchList.Where(x => 
+                x.HomeTeam.Name.ToLower().StartsWith(filter.ToLower()) || 
+                x.AwayTeam.Name.ToLower().StartsWith(filter.ToLower())).ToArray();
+
+        matchList = matchList.OrderByDescending(x => x.MatchDate).ToArray();
+
+        return matchList;
     }
 
     async ValueTask IAsyncDisposable.DisposeAsync()

@@ -45,6 +45,6 @@ else
     protected override async Task OnInitializedAsync()
     {
         forecasts = await ForecastService.GetForecastAsync(DateTime.Now);
-        //var data = await MatchResultProvider.GetMatchResultFromServer();
+        var data = await MatchResultProvider.GetMatchResultFromServer();
     }
 }
