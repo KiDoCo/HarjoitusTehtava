@@ -1,52 +1,51 @@
 ﻿@page "/matchlist"
 @using AdafyBlazorApp.Data
-@using System.Collections.ObjectModel;
-@implements IAsyncDisposable
-@inject IJSRuntime jsRunTime
-@inject MatchResultProvider provider
+@using System.Collections.ObjectModel
+@inject MatchResultProvider matchResultProvider
+@inject NavigationManager navigationManager
 
 @using AdafyBlazorApp.Models
-<PageTitle>Test</PageTitle>
-<h3>MatchList</h3>
+<PageTitle>Ottelut</PageTitle>
+<h3>Ottelut</h3>
 
 <input type="text" @oninput="UpdateMatchListing" />
 
 @if(loaded)
 {
-<table id="match_table" @ondblclick="MatchSelected" class="table table-striped table-hover">
-    <thead>
-        <tr>
-            <th>Päivämäärä</th>
-            <th>Kotijoukkue</th>
-            <th>VierasJoukkue</th>
-            <th>Tulos</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach(var match in matchObservableList)
-        {
+    <table id="match_table" class="table table-striped table-hover">
+        <thead>
             <tr>
-                <td>@match.MatchDate</td>
-                <td>
-                    <img height="16" width="16" src=@match.HomeTeam.LogoUrl>
-                    @match.HomeTeam.Name
-                    </td>
-                <td>
-                    <img height="16" width="16" src=@match.AwayTeam.LogoUrl>
-                    @match.AwayTeam.Name
-                    </td>
-                <td>@match.HomeGoals - @match.AwayGoals</td>
+                <th>Päivämäärä</th>
+                <th>Kotijoukkue</th>
+                <th>VierasJoukkue</th>
+                <th>Tulos</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach(var match in matchObservableList)
+            {
+                <tr @ondblclick="(e) => MatchSelected(e,match.Id)">
+                    <td>@match.MatchDate</td>
+                    <td>
+                        <img height="16" width="16" src=@match.HomeTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
+                        @match.HomeTeam.Name
+                        </td>
+                    <td>
+                        <img height="16" width="16" src=@match.AwayTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
+                        @match.AwayTeam.Name
+                        </td>
+                    <td>@match.HomeGoals - @match.AwayGoals</td>
+                </tr>
+            }
+        </tbody>
+    </table>
 }
 
 @code {
     private const string JSPATH = "./Areas/General/Pages/";
-    private bool loaded = false;
-    ObservableCollection<Match> matchObservableList = new ObservableCollection<Match>();
-    private IJSObjectReference? eventModule;
+
+    private bool loaded { get; set; } = false;
+    ObservableCollection<Match> matchObservableList { get; set; } = new ObservableCollection<Match>();
 
     private async Task UpdateMatchListing(ChangeEventArgs e)
     {
@@ -54,9 +53,9 @@
         matchObservableList = new ObservableCollection<Match>(await GetMatchesFromServer(filter));
     }
 
-    private Task MatchSelected(MouseEventArgs e)
+    private Task MatchSelected(MouseEventArgs e, int matchID)
     {
-        Console.WriteLine("test");
+        navigationManager.NavigateTo("/matchdetails/" + matchID);
         return Task.CompletedTask;
     }
 
@@ -68,7 +67,7 @@
 
     private async Task<Match[]> GetMatchesFromServer(string? filter)
     {
-        var matchList = await provider.GetMatchResultFromServer();
+        var matchList = await matchResultProvider.GetMatchResultFromServer();
         if (!string.IsNullOrEmpty(filter))
             matchList = matchList.Where(x => 
                 x.HomeTeam.Name.ToLower().StartsWith(filter.ToLower()) || 
@@ -77,12 +76,6 @@
         matchList = matchList.OrderByDescending(x => x.MatchDate).ToArray();
 
         return matchList;
-    }
-
-    async ValueTask IAsyncDisposable.DisposeAsync()
-    {
-        if (eventModule != null)
-            await eventModule.DisposeAsync();
     }
 
 }

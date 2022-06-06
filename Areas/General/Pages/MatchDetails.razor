@@ -1,0 +1,49 @@
+﻿@page "/matchdetails/{detailMatchID}"
+@using AdafyBlazorApp.Models
+@using AdafyBlazorApp.Data
+@inject MatchResultProvider matchResultProvider
+
+<PageTitle>Ottelun tiedot</PageTitle>
+@if(loaded)
+{
+    <h1>@detailMatch.MatchDate</h1>
+    <br />
+    <br />
+    <br />
+    <div class="container">
+        <div class="row">
+
+        <div class="col" style="display:inline-block">
+            <img src=@detailMatch.HomeTeam.LogoUrl.ReplaceUrlProtocolToSecure() />
+            <h2 style="text-align:center">@detailMatch.HomeTeam.Name</h2>
+
+        </div>
+        <div class="col" style="display:inline-block;">
+            <img src=@detailMatch.AwayTeam.LogoUrl.ReplaceUrlProtocolToSecure() />
+            <h2 style="text-align:center">@detailMatch.AwayTeam.Name</h2>
+
+        </div>
+        </div>
+    </div>
+
+    <table>
+
+    </table>
+    
+}
+
+@code {
+
+    [Parameter]
+    public string detailMatchID { get; set; }
+
+    private Match detailMatch { get; set; } = new Match();
+    private bool loaded { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var matchList = await matchResultProvider.GetMatchResultFromServer();
+        detailMatch = matchList.First(x => x.Id == int.Parse(detailMatchID));
+        loaded = true;
+    }
+}
