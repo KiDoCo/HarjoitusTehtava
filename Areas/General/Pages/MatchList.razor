@@ -1,0 +1,53 @@
+﻿@page "/matchlist"
+@implements IAsyncDisposable
+@inject IJSRuntime jsRunTime
+@using AdafyBlazorApp.Models
+<PageTitle>Test</PageTitle>
+<h3>MatchList</h3>
+
+<table id="match_table" class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Tiimi</th>
+            <th>Päivämäärä</th>
+            <th>Tulos</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var match in matchList)
+        {
+            <tr>
+                <td>@match.Id</td>
+                <td>@match.MatchDate</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private Match[] matchList;
+    private IJSObjectReference? eventModule;
+    private const string JSPath = "./Areas/General/Pages/";
+    protected override Task OnInitializedAsync()
+    {
+        matchList = Enumerable.Range(0, 10).Select(x => new Match
+        {
+            MatchDate = DateTime.UtcNow,
+            Id = x
+        }).ToArray();
+        return base.OnInitializedAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        eventModule = await jsRunTime.InvokeAsync<IJSObjectReference>("import", JSPath + "MatchList.razor.js");
+        await eventModule.InvokeVoidAsync("AssignDoubleClickEvent");
+    }
+
+    async ValueTask IAsyncDisposable.DisposeAsync()
+    {
+        if (eventModule != null)
+            await eventModule.DisposeAsync();
+    }
+
+}
