@@ -1,4 +1,4 @@
-﻿
+﻿using AdafyBlazorApp.Models;
 
 namespace AdafyBlazorApp.Data
 {
@@ -15,13 +15,11 @@ namespace AdafyBlazorApp.Data
             httpClient = client;
         }
 
-        public async Task<string> GetMatchResultFromServer()
+        public async Task<Match[]> GetMatchResultFromServer()
         {
-            return "";
-            var response = await httpClient.GetAsync("https://functionapp2018071101324.blob.core.windows.net/data/matches latest.json");
+            var response = await httpClient.GetAsync("https://functionapp2018071101324.blob.core.windows.net/data/matches_latest.json");
             response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadAsStringAsync();
-            return result;
+            return await response.Content.ReadFromJsonAsync<Match[]>();
         }
 
     }
