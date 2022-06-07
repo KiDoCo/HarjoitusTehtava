@@ -1,0 +1,80 @@
+﻿@page "/rankings"
+
+@using AdafyBlazorApp.Data
+@using AdafyBlazorApp.Models
+
+@inject MatchResultProvider matchResultProvider
+
+<PageTitle>Sijoitukset</PageTitle>
+<h3>Sijoitukset</h3>
+
+@if(loaded)
+{
+    <table height="100%" class="table table-striped">
+        <thead>
+            <tr style="text-align:center">
+                <th>Sijoitus</th>
+                <th>Joukkue</th>
+                <th>Ottelut</th>
+                <th>Voitot</th>
+                <th>Tasapelit</th>
+                <th>Häviöt</th>
+                <th>Maalit</th>
+                <th>Päästetyt maalit</th>
+                <th>Maalien ero</th>
+                <th>Pisteet</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach(var team in teamList)
+            {
+                <tr style="text-align:center">
+                    <td>@team.Ranking</td>
+                    <td>
+                        <img src=@team.LogoUrl.ReplaceUrlProtocolToSecure() />
+                        @team.Name
+                    </td>
+                    <td>@team.ADinfo.GamesPlayed</td>
+                    <td>@team.ADinfo.Wins</td>
+                    <td>@team.ADinfo.Draws</td>
+                    <td>@team.ADinfo.Losses</td>
+                    <td>@team.ADinfo.ScoredGoals</td>
+                    <td>@team.ADinfo.PassedGoals</td>
+                    <td>@team.ADinfo.ScoredGoals - @team.ADinfo.PassedGoals</td>
+                    <td>@team.ADinfo.Score</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private bool loaded { get; set; } = false;
+    private List<Team> teamList { get; set; } = new List<Team>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var matches = await matchResultProvider.GetMatchResultFromServer();
+
+        foreach(var match in matches)
+        {
+            if (!teamList.Any(x => x.Id == match.AwayTeam.Id))
+                teamList.Add(match.AwayTeam);
+
+            if (!teamList.Any(x => x.Id == match.HomeTeam.Id))
+                teamList.Add(match.HomeTeam);
+
+            await Utils.CalculateMatchResults(match, teamList);
+        }
+        int i = 0;
+        teamList.ForEach(x => x.ADinfo.GoalDifference = x.ADinfo.ScoredGoals - x.ADinfo.PassedGoals);
+        foreach(var team in teamList.OrderByDescending(x => x.ADinfo.Score).ThenByDescending(x => x.ADinfo.GoalDifference))
+        {
+            i++;
+            team.Ranking = i;
+        };
+
+        teamList = teamList.OrderBy(x => x.Ranking).ToList();
+        loaded = true;
+    }
+}
