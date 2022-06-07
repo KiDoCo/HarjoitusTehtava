@@ -1,10 +1,11 @@
 ﻿@page "/matchlist"
 @using AdafyBlazorApp.Data
 @using System.Collections.ObjectModel
+@using AdafyBlazorApp.Models
+
 @inject MatchResultProvider matchResultProvider
 @inject NavigationManager navigationManager
 
-@using AdafyBlazorApp.Models
 <PageTitle>Ottelut</PageTitle>
 <h3>Ottelut</h3>
 
@@ -27,11 +28,11 @@
                 <tr @ondblclick="(e) => MatchSelected(e,match.Id)">
                     <td>@match.MatchDate</td>
                     <td>
-                        <img height="16" width="16" src=@match.HomeTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
+                        <img src=@match.HomeTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
                         @match.HomeTeam.Name
                         </td>
                     <td>
-                        <img height="16" width="16" src=@match.AwayTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
+                        <img src=@match.AwayTeam.LogoUrl.ReplaceUrlProtocolToSecure()>
                         @match.AwayTeam.Name
                         </td>
                     <td>@match.HomeGoals - @match.AwayGoals</td>
@@ -77,5 +78,4 @@
 
         return matchList;
     }
-
 }

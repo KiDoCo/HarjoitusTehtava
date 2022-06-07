@@ -15,5 +15,7 @@
         public int Ranking { get; set; }
 
         public string? Message {get;set;}
+
+        public TeamAdditionalInfo ADinfo { get; set; } = new TeamAdditionalInfo();
     }
 }
