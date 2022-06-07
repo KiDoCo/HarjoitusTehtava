@@ -1,0 +1,12 @@
+﻿img {
+    height: 256px;
+    width: 256px;
+}
+.col {
+    text-align:center;
+}
+
+.matchEventIcon {
+    height: 64px;
+    width: 64px;
+}
