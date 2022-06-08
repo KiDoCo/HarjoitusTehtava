@@ -4,9 +4,15 @@ namespace AdafyBlazorApp
 {
     public static class Utils
     {
+        private const string domain = "http://az412859.vo.msecnd.net/";
         public static string ReplaceUrlProtocolToSecure(this string url)
         {
             return url.Replace("http", "https");
+        }
+
+        public static string ReplaceEventIconUrl(this string url,HttpClient client)
+        {
+            return url.Replace(domain, client.BaseAddress?.ToString());
         }
 
         public static Task CalculateMatchResults(Match match,List<Team> teamList)

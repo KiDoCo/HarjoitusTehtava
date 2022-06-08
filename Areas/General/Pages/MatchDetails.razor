@@ -2,7 +2,7 @@
 @using AdafyBlazorApp.Models
 @using AdafyBlazorApp.Data
 @inject MatchResultProvider matchResultProvider
-
+@inject HttpClient client
 <PageTitle>Ottelun tiedot</PageTitle>
 @if(loaded)
 {
@@ -42,7 +42,7 @@
                     <tr>
                         <td>@TimeSpan.FromMinutes(matchevent.EventMinute)</td>
                         <td>
-                            <img class="matchEventIcon" src=@matchevent.EventTypeIcon>
+                            <img class="matchEventIcon" style="background-color:transparent" src=@matchevent.EventTypeIcon.ReplaceEventIconUrl(client)>
                         </td>
                         <td>@matchevent.Description</td>
                     </tr>
